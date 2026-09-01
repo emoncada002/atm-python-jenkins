@@ -1,45 +1,42 @@
 pipeline {
     agent any
+
+    environment {
+        DOCKER_IMAGE_BASE = "app-python-base"
+        DOCKER_IMAGE_APP  = "app-python-final"
+        CONTAINER_NAME    = "mi-aplicacion-python"
+    }
+
     stages {
-        stage('Checkout') {
+        stage('1. Recuperar Código') {
             steps {
-                echo 'Obteniendo el código del repositorio...'
+                echo 'Descargando código desde GitHub...'
                 checkout scm
             }
         }
-        stage('Verificar Python') {
+
+        stage('2. Construir Imagen Base') {
             steps {
-                sh '/usr/bin/python3.11 --version'
+                echo 'Construyendo la imagen Docker Base...'
+                sh "docker build -t ${DOCKER_IMAGE_BASE} -f Dockerfile.base ."
             }
         }
-        stage('Verificar Docker') {
+
+        stage('3. Construir Imagen Aplicativa') {
             steps {
-                sh 'docker --version'
+                echo 'Construyendo la imagen Docker Final...'
+                sh "docker build -t ${DOCKER_IMAGE_APP} -f Dockerfile ."
             }
         }
-        stage('Instalar Dependencias') {
+
+        stage('4. Desplegar Aplicación') {
             steps {
-                sh '/usr/bin/python3.11 -m pip install -r requirements.txt'
-            }
-        }
-        stage('Ejecutar Pruebas Python') {
-            steps {
-                sh '/usr/bin/python3.11 test_atm.py'
-            }
-        }
-        stage('Construir Imagen Docker') {
-            steps {
-                sh 'docker build -t atm-python:latest .'
-            }
-        }
-        stage('Ejecutar Pruebas en Docker') {
-            steps {
-                sh 'docker run --rm atm-python:latest python3 test_atm.py'
-            }
-        }
-        stage('Finalizado') {
-            steps {
-                echo 'Pipeline ejecutado correctamente con Python, pruebas y Docker.'
+                echo 'Limpiando contenedores anteriores...'
+                sh "docker stop ${CONTAINER_NAME} || true"
+                sh "docker rm ${CONTAINER_NAME} || true"
+                
+                echo 'Levantando el nuevo contenedor de la aplicación...'
+                sh "docker run -d --name ${CONTAINER_NAME} ${DOCKER_IMAGE_APP}"
             }
         }
     }
