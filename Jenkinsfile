@@ -1,11 +1,11 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_IMAGE_BASE = "app-python-base"
-        DOCKER_IMAGE_APP  = "app-python-final"
-        CONTAINER_NAME    = "mi-aplicacion-python"
-    }
+     environment {
+         DOCKER_IMAGE_BASE = "atm-python-base:1.0"
+         DOCKER_IMAGE_APP  = "app-python-final"
+         CONTAINER_NAME    = "mi-aplicacion-python"
+     }
 
     stages {
         stage('1. Recuperar Código') {
