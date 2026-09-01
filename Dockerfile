@@ -1,5 +1,3 @@
-FROM atm-python-base:1.0
-WORKDIR /app
-COPY atm.py .
-COPY test_atm.py .
-CMD ["python", "atm.py"]
+FROM app-python-base:latest
+COPY . /app
+CMD ["python", "main.py"]
